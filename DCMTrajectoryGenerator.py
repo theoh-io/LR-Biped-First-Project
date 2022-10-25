@@ -29,7 +29,9 @@ class DCMTrajectoryGenerator:
         self.CoM[0] = com_ini
         self.CoMDot[0] = 0
         #todo: Use equation (3) in jupyter notebook to update "self.CoMDot" array
+        self.CoMDot[0]=self.omega(self.DCM-self.CoM[0])
         #todo: Use numerical integration(for example a simple euler method) for filling the "self.CoM" array
+
         #Note: that "self.CoM" should be a 3d vector that third component is constant CoM height
         
         return self.CoM
@@ -46,10 +48,12 @@ class DCMTrajectoryGenerator:
     def findFinalDCMPositionsForEachStep(self):# Finding Final(=initial for previous, refer to equation 8) dcm for a step
         self.DCMForEndOfStep = np.copy(self.CoP) #initialization for having same shape
         #todo: implement capturability constraint(3rd item of jupyter notebook steps for DCM motion planning section)
+        self.DCMForEndOfStep[-1]=self.CoP[-1]
         #todo: Use equation 7 for finding DCM at the end of step and update the "self.DCMForEndOfStep" array  
-           
-           
-        pass
+        for i in range(self.timeStep, 0, -1):
+            dcm_ini=self.CoP[i]+(self.DCMForEndOfStep[i]-self.CoP[i])*np.exp(self.omega*self.stepDuration)
+            self.DCMForEndOfStep[i-1]=dcm_ini
+        #self.DCMForEndOfStep=self.CoP+(self)
 
     def calculateCoPTrajectory(self):
         self.DCMVelocity = np.zeros_like(self.DCM)
