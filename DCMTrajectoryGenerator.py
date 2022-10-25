@@ -33,7 +33,13 @@ class DCMTrajectoryGenerator:
         #todo: Use numerical integration(for example a simple euler method) for filling the "self.CoM" array
 
         #Note: that "self.CoM" should be a 3d vector that third component is constant CoM height
-        
+        self.CoMDot[0] = self.omega*(self.DCM-self.CoM[0])
+        #CoM[k+1] = CoM[k] + time_step*CoMDot[k]
+        for k in range(self.numberOfSteps+1):
+            self.CoM[k+1] = self.CoM[k]+self.timeStep*self.CoMDot[k]
+        for k in range(self.numberOfSteps):
+            self.CoM[k,2] = self.CoMHeight
+    
         return self.CoM
 
 
@@ -72,7 +78,7 @@ class DCMTrajectoryGenerator:
             time =  #Finding the time of a corresponding control cycle
             i =  #Finding the number of corresponding step of walking
             t =  #The “internal” step time t is reset at the beginning of each step
-            self.DCM.append(                      ) #Use equation (9) for finding the DCM trajectory
+            self.DCM.append(     ) #Use equation (9) for finding the DCM trajectory
         pass
 
     
