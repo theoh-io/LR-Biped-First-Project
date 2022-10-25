@@ -33,7 +33,7 @@ class DCMTrajectoryGenerator:
         #Note: that "self.CoM" should be a 3d vector that third component is constant CoM height
         self.CoMDot[0] = self.omega*(self.DCM-self.CoM[0])
         #CoM[k+1] = CoM[k] + time_step*CoMDot[k]
-        for k in range(self.numberOfSteps):
+        for k in range(self.numberOfSteps+1):
             self.CoM[k+1] = self.CoM[k]+self.timeStep*self.CoMDot[k]
         for k in range(self.numberOfSteps):
             self.CoM[k,2] = self.CoMHeight
