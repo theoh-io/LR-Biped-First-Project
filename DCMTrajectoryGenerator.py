@@ -29,14 +29,15 @@ class DCMTrajectoryGenerator:
         self.CoM[0] = com_ini
         self.CoMDot[0] = 0
         #todo: Use equation (3) in jupyter notebook to update "self.CoMDot" array
-        self.CoMDot=self.omega*(self.DCM-self.CoM)
+        
         #todo: Use numerical integration(for example a simple euler method) for filling the "self.CoM" array
         #Note: that "self.CoM" should be a 3d vector that third component is constant CoM height
       
-        for k in range(self.numberOfSteps+1):
+        for k in range(0,self.CoM.shape[0]-1):#self.numberOfSteps+1):
+            self.CoMDot[k+1]=self.omega*(self.DCM[k]-self.CoM[k])
             self.CoM[k+1] = self.CoM[k]+self.timeStep*self.CoMDot[k]
-        for k in range(self.numberOfSteps):
-            self.CoM[k,2] = self.CoMHeight
+        #for k in range(self.numberOfSteps):
+            self.CoM[k+1,2] = self.CoMHeight
     
         return self.CoM
 
@@ -65,8 +66,8 @@ class DCMTrajectoryGenerator:
         self.DCMVelocity[0] = 0
         self.CoPTrajectory[0] = self.CoP[0]
         #todo: Implement numerical differentiation for finding DCM Velocity and update the "self.DCMVelocity" array
-        for k in range(self.numberOfSteps+1):
-            self.DCMVelocity[k] = (1/self.timeStep)*(self.DCM[k]-self.DCM[k-1])
+        for k in range(0,self.CoM.shape[0]-1):
+            self.DCMVelocity[k+1] = (1/self.timeStep)*(self.DCM[k+1]-self.DCM[k])
         #todo: Use equation (4) to find CoP by having DCM and DCM Velocity and update the "self.CoPTrajectory" array
         self.CoPTrajectory = self.DCM - self.DCMVelocity/self.omega
 
@@ -78,7 +79,7 @@ class DCMTrajectoryGenerator:
             time = iter*self.timeStep  #Finding the time of a corresponding control cycle
             i = int(time/self.stepDuration) #Finding the number of corresponding step of walking
             t = time%self.stepDuration #The “internal” step time t is reset at the beginning of each step
-            self.DCM.append(self.CoP+(self.DCMForEndOfStep-self.CoP)*np.exp(self.omega*(t-self.stepDuration))) #Use equation (9) for finding the DCM trajectory
+            self.DCM.append(self.CoP[i]+(self.DCMForEndOfStep[i]-self.CoP[i])*np.exp(self.omega*(t-self.stepDuration))) #Use equation (9) for finding the DCM trajectory
         pass
 
     
