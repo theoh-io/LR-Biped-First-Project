@@ -29,12 +29,10 @@ class DCMTrajectoryGenerator:
         self.CoM[0] = com_ini
         self.CoMDot[0] = 0
         #todo: Use equation (3) in jupyter notebook to update "self.CoMDot" array
-        self.CoMDot[0]=self.omega(self.DCM-self.CoM[0])
+        self.CoMDot=self.omega*(self.DCM-self.CoM)
         #todo: Use numerical integration(for example a simple euler method) for filling the "self.CoM" array
-
         #Note: that "self.CoM" should be a 3d vector that third component is constant CoM height
-        self.CoMDot[0] = self.omega*(self.DCM-self.CoM[0])
-        #CoM[k+1] = CoM[k] + time_step*CoMDot[k]
+      
         for k in range(self.numberOfSteps+1):
             self.CoM[k+1] = self.CoM[k]+self.timeStep*self.CoMDot[k]
         for k in range(self.numberOfSteps):
@@ -56,8 +54,8 @@ class DCMTrajectoryGenerator:
         #todo: implement capturability constraint(3rd item of jupyter notebook steps for DCM motion planning section)
         self.DCMForEndOfStep[-1]=self.CoP[-1]
         #todo: Use equation 7 for finding DCM at the end of step and update the "self.DCMForEndOfStep" array  
-        for i in range(self.timeStep, 0, -1):
-            dcm_ini=self.CoP[i]+(self.DCMForEndOfStep[i]-self.CoP[i])*np.exp(self.omega*self.stepDuration)
+        for i in range(self.numberOfSteps, 0, -1):
+            dcm_ini=self.CoP[i]+(self.DCMForEndOfStep[i]-self.CoP[i])*np.exp(-self.omega*self.stepDuration)
             self.DCMForEndOfStep[i-1]=dcm_ini
         #self.DCMForEndOfStep=self.CoP+(self)
 
@@ -67,18 +65,20 @@ class DCMTrajectoryGenerator:
         self.DCMVelocity[0] = 0
         self.CoPTrajectory[0] = self.CoP[0]
         #todo: Implement numerical differentiation for finding DCM Velocity and update the "self.DCMVelocity" array
-        #todo: Use equation (10) to find CoP by having DCM and DCM Velocity and update the "self.CoPTrajectory" array
-
+        for k in range(self.numberOfSteps+1):
+            self.DCMVelocity[k] = (1/self.timeStep)*(self.DCM[k]-self.DCM[k-1])
+        #todo: Use equation (4) to find CoP by having DCM and DCM Velocity and update the "self.CoPTrajectory" array
+        self.CoPTrajectory = self.DCM - self.DCMVelocity/self.omega
 
         pass
 
 
     def planDCM(self): #The output of this function is a DCM vector with a size of (int(self.numberOfSamplesPerSecond* self.stepDuration * self.CoP.shape[0])) that is number of sample points for whole time of walking
         for iter in range(int(self.numberOfSamplesPerSecond* self.stepDuration * self.CoP.shape[0])):# We iterate on the whole simulation control cycles:  
-            time =  #Finding the time of a corresponding control cycle
-            i =  #Finding the number of corresponding step of walking
-            t =  #The “internal” step time t is reset at the beginning of each step
-            self.DCM.append(     ) #Use equation (9) for finding the DCM trajectory
+            time = iter*self.timeStep  #Finding the time of a corresponding control cycle
+            i = int(time/self.stepDuration) #Finding the number of corresponding step of walking
+            t = time%self.stepDuration #The “internal” step time t is reset at the beginning of each step
+            self.DCM.append(self.CoP+(self.DCMForEndOfStep-self.CoP)*np.exp(self.omega*(t-self.stepDuration))) #Use equation (9) for finding the DCM trajectory
         pass
 
     
